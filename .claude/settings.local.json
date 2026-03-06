@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import docx2txt; print\\(docx2txt.process\\('/root/project/Deck产品设计文档.docx'\\)\\)\" 2>/dev/null || echo \"docx2txt not installed\")",
+      "Bash(chmod +x /root/project/scripts/*.sh)",
+      "Bash(which gh && gh --version)",
+      "Bash(gh auth status 2>&1 || echo \"Not authenticated\")",
+      "Bash(gh repo create seangleridika-max/deck --private --description \"深度研究与知识创作平台\" --clone=false 2>&1)",
+      "Bash(git init && git add . && git commit -m \"chore: initial Deck project setup with DevOps configuration\" 2>&1 | tail -20)"
+    ]
+  }
+}

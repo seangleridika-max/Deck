@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deck 技术架构图</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Arial', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #F0F4F8; min-height: 100vh; }
+
+  .page { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+  .header { text-align: center; margin-bottom: 40px; }
+  .header h1 { font-size: 32px; font-weight: 800; color: #1E3A5F; letter-spacing: -0.5px; }
+  .header p { font-size: 15px; color: #6B7280; margin-top: 8px; }
+  .header .version { display: inline-block; background: #EFF6FF; color: #2563EB; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+
+  /* -------- 流程图容器 -------- */
+  .arch { display: flex; flex-direction: column; gap: 0; }
+
+  /* -------- 层 -------- */
+  .layer { background: white; border-radius: 16px; padding: 24px 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); position: relative; }
+  .layer-title { font-size: 13px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .layer-title::before { content: ''; display: inline-block; width: 4px; height: 16px; border-radius: 2px; }
+
+  .layer-user .layer-title { color: #7C3AED; }
+  .layer-user .layer-title::before { background: #7C3AED; }
+
+  .layer-frontend .layer-title { color: #2563EB; }
+  .layer-frontend .layer-title::before { background: #2563EB; }
+
+  .layer-ai .layer-title { color: #0D9488; }
+  .layer-ai .layer-title::before { background: #0D9488; }
+
+  .layer-backend .layer-title { color: #D97706; }
+  .layer-backend .layer-title::before { background: #D97706; }
+
+  .layer-infra .layer-title { color: #6B7280; }
+  .layer-infra .layer-title::before { background: #6B7280; }
+
+  /* -------- 卡片行 -------- */
+  .cards { display: flex; gap: 12px; flex-wrap: wrap; }
+  .card { flex: 1; min-width: 150px; border-radius: 12px; padding: 16px 14px; text-align: center; position: relative; transition: transform 0.2s, box-shadow 0.2s; cursor: default; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+  .card-icon { font-size: 26px; margin-bottom: 8px; }
+  .card-name { font-size: 13px; font-weight: 700; color: #111827; }
+  .card-desc { font-size: 11px; color: #6B7280; margin-top: 4px; line-height: 1.5; }
+  .card-tag { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 999px; margin-top: 6px; font-weight: 600; }
+
+  /* 颜色主题 */
+  .purple { background: #F5F3FF; border: 1px solid #DDD6FE; }
+  .purple .card-tag { background: #EDE9FE; color: #6D28D9; }
+  .blue { background: #EFF6FF; border: 1px solid #BFDBFE; }
+  .blue .card-tag { background: #DBEAFE; color: #1D4ED8; }
+  .green { background: #F0FDF4; border: 1px solid #BBF7D0; }
+  .green .card-tag { background: #DCFCE7; color: #15803D; }
+  .teal { background: #F0FDFA; border: 1px solid #99F6E4; }
+  .teal .card-tag { background: #CCFBF1; color: #0F766E; }
+  .amber { background: #FFFBEB; border: 1px solid #FDE68A; }
+  .amber .card-tag { background: #FEF3C7; color: #B45309; }
+  .gray { background: #F9FAFB; border: 1px solid #E5E7EB; }
+  .gray .card-tag { background: #F3F4F6; color: #374151; }
+  .rose { background: #FFF1F2; border: 1px solid #FECDD3; }
+  .rose .card-tag { background: #FFE4E6; color: #BE123C; }
+
+  /* 连接箭头 */
+  .arrow-down { text-align: center; padding: 4px 0; color: #9CA3AF; font-size: 22px; line-height: 1; }
+  .arrow-label { font-size: 11px; color: #9CA3AF; font-weight: 500; letter-spacing: 0.3px; }
+
+  /* 数据流说明 */
+  .flow-section { margin-top: 40px; }
+  .flow-section h2 { font-size: 18px; font-weight: 700; color: #1E3A5F; margin-bottom: 16px; }
+  .flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .flow-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  .flow-card h3 { font-size: 14px; font-weight: 700; color: #111827; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .flow-card ol { padding-left: 18px; }
+  .flow-card li { font-size: 12px; color: #374151; line-height: 1.8; }
+
+  /* API 表格 */
+  .api-section { margin-top: 40px; }
+  .api-section h2 { font-size: 18px; font-weight: 700; color: #1E3A5F; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+  th { background: #1E3A5F; color: white; font-size: 12px; font-weight: 600; padding: 10px 14px; text-align: left; }
+  td { font-size: 12px; color: #374151; padding: 9px 14px; border-bottom: 1px solid #F3F4F6; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F9FAFB; }
+  .method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 10px; }
+  .get { background: #DCFCE7; color: #15803D; }
+  .post { background: #DBEAFE; color: #1D4ED8; }
+  .put { background: #FEF3C7; color: #B45309; }
+  .delete { background: #FFE4E6; color: #BE123C; }
+
+  .footer { text-align: center; margin-top: 40px; color: #9CA3AF; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 标题 -->
+  <div class="header">
+    <h1>Deck 技术架构图</h1>
+    <p>深度研究与知识创作平台 · 系统架构设计</p>
+    <span class="version">v1.0 · 2026年2月</span>
+  </div>
+
+  <!-- ========== 架构层级图 ========== -->
+  <div class="arch">
+
+    <!-- 用户层 -->
+    <div class="layer layer-user">
+      <div class="layer-title">用户层 · 访问入口</div>
+      <div class="cards">
+        <div class="card purple">
+          <div class="card-icon">💻</div>
+          <div class="card-name">桌面浏览器</div>
+          <div class="card-desc">Chrome / Edge / Safari</div>
+          <span class="card-tag">主要入口</span>
+        </div>
+        <div class="card purple">
+          <div class="card-icon">📱</div>
+          <div class="card-name">移动浏览器</div>
+          <div class="card-desc">响应式 Web（后续优化）</div>
+          <span class="card-tag">后期支持</span>
+        </div>
+        <div class="card purple">
+          <div class="card-icon">🔌</div>
+          <div class="card-name">浏览器插件</div>
+          <div class="card-desc">一键导入网页内容</div>
+          <span class="card-tag">规划中</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓ <span class="arrow-label">HTTPS</span> ↓</div>
+
+    <!-- 前端层 -->
+    <div class="layer layer-frontend">
+      <div class="layer-title">前端应用层 · React SPA</div>
+      <div class="cards">
+        <div class="card blue">
+          <div class="card-icon">🏠</div>
+          <div class="card-name">工作台</div>
+          <div class="card-desc">项目管理<br>快速入口</div>
+          <span class="card-tag">Dashboard</span>
+        </div>
+        <div class="card blue">
+          <div class="card-icon">📚</div>
+          <div class="card-name">知识库</div>
+          <div class="card-desc">资料导入<br>来源管理</div>
+          <span class="card-tag">Sources</span>
+        </div>
+        <div class="card blue">
+          <div class="card-icon">🔬</div>
+          <div class="card-name">深度研究</div>
+          <div class="card-desc">AI对话<br>结构化分析</div>
+          <span class="card-tag">Research</span>
+        </div>
+        <div class="card blue">
+          <div class="card-icon">📄</div>
+          <div class="card-name">报告编辑器</div>
+          <div class="card-desc">富文本编辑<br>导出DOCX/PDF</div>
+          <span class="card-tag">Report</span>
+        </div>
+        <div class="card blue">
+          <div class="card-icon">🎞️</div>
+          <div class="card-name">幻灯片编辑器</div>
+          <div class="card-desc">可视化编辑<br>导出PPTX/PDF</div>
+          <span class="card-tag">Slides</span>
+        </div>
+        <div class="card blue">
+          <div class="card-icon">⚡</div>
+          <div class="card-name">技能中心</div>
+          <div class="card-desc">工作流模板<br>场景化引导</div>
+          <span class="card-tag">Skills</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↕ <span class="arrow-label">Gemini API (REST)</span> ↕</div>
+
+    <!-- AI层 -->
+    <div class="layer layer-ai">
+      <div class="layer-title">AI 引擎层 · Google Gemini</div>
+      <div class="cards">
+        <div class="card teal">
+          <div class="card-icon">🧠</div>
+          <div class="card-name">Gemini 2.5 Pro</div>
+          <div class="card-desc">深度研究 · 复杂报告生成<br>多文档融合分析</div>
+          <span class="card-tag">深度分析</span>
+        </div>
+        <div class="card teal">
+          <div class="card-icon">⚡</div>
+          <div class="card-name">Gemini 2.5 Flash</div>
+          <div class="card-desc">快速摘要 · 实时问答<br>资料内容提取</div>
+          <span class="card-tag">快速响应</span>
+        </div>
+        <div class="card teal">
+          <div class="card-icon">🎨</div>
+          <div class="card-name">Gemini Flash Image</div>
+          <div class="card-desc">图表生成 · 可视化创建<br>幻灯片配图</div>
+          <span class="card-tag">图像生成</span>
+        </div>
+        <div class="card teal">
+          <div class="card-icon">🔢</div>
+          <div class="card-name">结构化输出</div>
+          <div class="card-desc">JSON Schema验证<br>responseMimeType约束</div>
+          <span class="card-tag">数据规范</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↕ <span class="arrow-label">Bearer Token · REST API</span> ↕</div>
+
+    <!-- 后端层 -->
+    <div class="layer layer-backend">
+      <div class="layer-title">后端服务层 · Fabric Worker (Cloudflare)</div>
+      <div class="cards">
+        <div class="card amber">
+          <div class="card-icon">⚙️</div>
+          <div class="card-name">认证中间件</div>
+          <div class="card-desc">Bearer Token验证<br>withAuth() 守卫</div>
+          <span class="card-tag">安全层</span>
+        </div>
+        <div class="card amber">
+          <div class="card-icon">👤</div>
+          <div class="card-name">用户 API</div>
+          <div class="card-desc">注册/登录/用户信息<br>/users 端点</div>
+          <span class="card-tag">用户管理</span>
+        </div>
+        <div class="card amber">
+          <div class="card-icon">📁</div>
+          <div class="card-name">项目 API</div>
+          <div class="card-desc">Session CRUD<br>资料来源管理</div>
+          <span class="card-tag">项目管理</span>
+        </div>
+        <div class="card amber">
+          <div class="card-icon">📊</div>
+          <div class="card-name">日志 API</div>
+          <div class="card-desc">结构化日志追加/检索<br>/sessions/:id/logs</div>
+          <span class="card-tag">监控</span>
+        </div>
+        <div class="card amber">
+          <div class="card-icon">📦</div>
+          <div class="card-name">资产 API</div>
+          <div class="card-desc">ZIP上传/签名URL<br>/sessions/:id/assets</div>
+          <span class="card-tag">文件管理</span>
+        </div>
+        <div class="card amber">
+          <div class="card-icon">🗄️</div>
+          <div class="card-name">应用存储 API</div>
+          <div class="card-desc">持久化对象存储<br>/apps/:name/storage/*</div>
+          <span class="card-tag">持久化</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↕ <span class="arrow-label">Cloudflare 绑定</span> ↕</div>
+
+    <!-- 基础设施层 -->
+    <div class="layer layer-infra">
+      <div class="layer-title">基础设施层 · Cloudflare Edge</div>
+      <div class="cards">
+        <div class="card gray">
+          <div class="card-icon">🗃️</div>
+          <div class="card-name">Cloudflare D1</div>
+          <div class="card-desc">SQLite 数据库<br>sessions · logs · assets<br>用户表 · 项目表</div>
+          <span class="card-tag">关系数据</span>
+        </div>
+        <div class="card gray">
+          <div class="card-icon">🪣</div>
+          <div class="card-name">Cloudflare R2</div>
+          <div class="card-desc">对象存储<br>PDF · DOCX · PPTX<br>生成报告 · 幻灯片</div>
+          <span class="card-tag">文件存储</span>
+        </div>
+        <div class="card gray">
+          <div class="card-icon">🔐</div>
+          <div class="card-name">Cloudflare Secrets</div>
+          <div class="card-desc">FABRIC_TOKEN<br>GEMINI_API_KEY<br>安全凭证管理</div>
+          <span class="card-tag">密钥管理</span>
+        </div>
+        <div class="card gray">
+          <div class="card-icon">🌐</div>
+          <div class="card-name">Cloudflare CDN</div>
+          <div class="card-desc">全球边缘加速<br>前端静态资源<br>低延迟访问</div>
+          <span class="card-tag">边缘网络</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end .arch -->
+
+  <!-- ========== 数据库模型 ========== -->
+  <div class="flow-section">
+    <h2>📊 数据模型关系</h2>
+    <div class="flow-grid">
+      <div class="flow-card">
+        <h3>👤 users（用户表）</h3>
+        <ol>
+          <li>id — 唯一标识符 (nanoid)</li>
+          <li>email — 邮箱（登录凭证）</li>
+          <li>name — 显示名称</li>
+          <li>password_hash — 密码哈希</li>
+          <li>plan — free / pro</li>
+          <li>created_at — 注册时间</li>
+        </ol>
+      </div>
+      <div class="flow-card">
+        <h3>📁 sessions（项目表）</h3>
+        <ol>
+          <li>id — Session ID (20位)</li>
+          <li>user_id → users.id</li>
+          <li>app_name — "deck"</li>
+          <li>title — 项目标题</li>
+          <li>skill_id — 使用的技能</li>
+          <li>status — active/completed</li>
+        </ol>
+      </div>
+      <div class="flow-card">
+        <h3>📄 sources（资料来源）</h3>
+        <ol>
+          <li>id — 来源ID</li>
+          <li>session_id → sessions.id</li>
+          <li>type — url/pdf/video/text</li>
+          <li>url — 来源地址</li>
+          <li>content — 提取内容</li>
+          <li>created_at — 导入时间</li>
+        </ol>
+      </div>
+      <div class="flow-card">
+        <h3>📊 assets（资产表）</h3>
+        <ol>
+          <li>id — 资产ID</li>
+          <li>session_id → sessions.id</li>
+          <li>filename — 文件名</li>
+          <li>type — report/slides/source</li>
+          <li>r2_key — R2对象键</li>
+          <li>size — 文件大小(bytes)</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 核心工作流 ========== -->
+  <div class="flow-section">
+    <h2>🔄 核心请求流程</h2>
+    <div class="flow-grid">
+      <div class="flow-card">
+        <h3>📚 资料导入流程</h3>
+        <ol>
+          <li>用户提交URL/上传文件</li>
+          <li>前端发送至 Fabric Worker</li>
+          <li>Worker 验证Token并存储元数据至D1</li>
+          <li>文件上传至Cloudflare R2</li>
+          <li>Gemini Flash 提取文本内容</li>
+          <li>内容存入D1 sources表</li>
+          <li>返回来源ID与摘要至前端</li>
+        </ol>
+      </div>
+      <div class="flow-card">
+        <h3>🔬 深度研究流程</h3>
+        <ol>
+          <li>用户提问或选择分析框架</li>
+          <li>前端聚合所有sources内容</li>
+          <li>构建 Gemini 2.5 Pro 请求</li>
+          <li>流式返回AI分析结果</li>
+          <li>结果附带来源引用标注</li>
+          <li>研究内容存至D1 logs表</li>
+          <li>用户可继续追问或生成报告</li>
+        </ol>
+      </div>
+      <div class="flow-card">
+        <h3>📄 报告生成流程</h3>
+        <ol>
+          <li>用户选择报告模板/技能</li>
+          <li>Gemini Pro 基于研究内容生成初稿</li>
+          <li>前端富文本编辑器加载内容</li>
+          <li>用户在线编辑与调整</li>
+          <li>用户点击「导出」</li>
+          <li>前端生成DOCX/PDF文件</li>
+          <li>文件上传至R2并返回下载链接</li>
+        </ol>
+      </div>
+      <div class="flow-card">
+        <h3>🎞️ 幻灯片生成流程</h3>
+        <ol>
+          <li>用户点击「生成PPT」</li>
+          <li>Gemini Pro 将报告分解为幻灯片结构</li>
+          <li>JSON Schema 约束幻灯片数据格式</li>
+          <li>前端渲染幻灯片预览</li>
+          <li>用户拖拽编辑布局与内容</li>
+          <li>pptxgenjs 生成最终PPTX文件</li>
+          <li>文件上传R2并返回下载链接</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== API 端点 ========== -->
+  <div class="api-section">
+    <h2>🔌 主要 API 端点</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>方法</th>
+          <th>端点</th>
+          <th>说明</th>
+          <th>认证</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td>/users</td>
+          <td>创建用户账户</td>
+          <td>无</td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td>/users/login</td>
+          <td>用户登录，返回Token</td>
+          <td>无</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td>/users/:id</td>
+          <td>获取用户信息</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td>/sessions</td>
+          <td>创建新项目（Session）</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td>/sessions?appName=deck</td>
+          <td>列举当前用户项目</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td>/sessions/:id/sources</td>
+          <td>添加资料来源</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td>/sessions/:id/sources</td>
+          <td>获取项目资料列表</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td>/sessions/:id/logs</td>
+          <td>追加研究日志/对话记录</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td>/sessions/:id/logs</td>
+          <td>获取研究历史记录</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method post">POST</span></td>
+          <td>/sessions/:id/assets</td>
+          <td>上传报告/幻灯片文件（ZIP）</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td>/sessions/:id/assets</td>
+          <td>获取资产列表（含签名URL）</td>
+          <td>Bearer</td>
+        </tr>
+        <tr>
+          <td><span class="method get">GET</span></td>
+          <td>/apps/deck/storage/*</td>
+          <td>应用级持久化存储（技能配置等）</td>
+          <td>Bearer</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    Deck 技术架构图 · 版本 1.0 · 2026年2月 · 机密文件
+  </div>
+
+</div>
+</body>
+</html>

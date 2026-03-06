@@ -1,0 +1,194 @@
+# AO (Agent Orchestrator) 配置文件
+
+## 触发器配置
+
+### 1. Issue自动开发触发器
+trigger_id: issue_auto_dev
+event: github.issue.opened
+condition: |
+  labels.includes('ready-for-dev') &&
+  !labels.includes('blocked')
+action: parallel_develop
+config:
+  agents:
+    - name: codex
+      priority: 1
+      capabilities: [code_generation, refactoring]
+    - name: claude
+      priority: 1
+      capabilities: [architecture, testing]
+  strategy: race
+  timeout: 3600
+  auto_pr: true
+  pr_config:
+    auto_link_issue: true
+    draft: false
+    reviewers: []
+
+### 2. CI失败自动修复触发器
+trigger_id: ci_auto_fix
+event: github.workflow.failed
+condition: |
+  workflow_name == 'CI Pipeline' &&
+  attempt_count < 3
+action: auto_fix_ci
+config:
+  agent: claude
+  max_retries: 3
+  auto_push: true
+  commit_message: "fix: auto-fix CI failure"
+  analysis_steps:
+    - read_logs
+    - identify_error
+    - generate_fix
+    - test_locally
+    - push_fix
+
+### 3. Review Comment自动处理触发器
+trigger_id: review_auto_handle
+event: github.pull_request_review_comment.created
+condition: |
+  !comment.body.includes('[skip-ao]')
+action: handle_review_comment
+config:
+  agent: claude
+  auto_push: true
+  commit_message: "fix: address review comment"
+  reply_to_comment: true
+
+## 工作流模板
+
+### Feature开发模板
+name: feature_development
+steps:
+  - name: analyze_requirements
+    agent: claude
+    prompt: |
+      分析Issue需求，输出：
+      1. 技术方案
+      2. 需要修改的文件
+      3. 测试策略
+      4. 潜在风险
+    output: technical_plan.md
+
+  - name: implement_code
+    agent: codex
+    prompt: |
+      根据技术方案实现代码：
+      - 遵循项目代码规范
+      - 添加必要注释
+      - 保持函数简洁
+    depends_on: analyze_requirements
+
+  - name: write_tests
+    agent: codex
+    prompt: |
+      为实现的代码编写测试：
+      - 单元测试覆盖核心逻辑
+      - 边界条件测试
+      - 错误处理测试
+    depends_on: implement_code
+    parallel: true
+
+  - name: create_pr
+    action: github.create_pull_request
+    config:
+      title: "feat: {issue_title}"
+      body: |
+        ## 变更说明
+        {technical_plan}
+
+        ## 测试
+        - [x] 单元测试通过
+        - [x] 本地验证完成
+
+        Closes #{issue_number}
+      auto_link_issue: true
+
+### Bug修复模板
+name: bug_fix
+steps:
+  - name: reproduce_bug
+    agent: claude
+    prompt: |
+      分析Bug报告，尝试复现：
+      1. 理解问题描述
+      2. 定位可能的代码位置
+      3. 分析根因
+    output: bug_analysis.md
+
+  - name: implement_fix
+    agent: codex
+    prompt: |
+      实现Bug修复：
+      - 最小化变更范围
+      - 添加防御性代码
+      - 确保不引入新问题
+    depends_on: reproduce_bug
+
+  - name: add_regression_test
+    agent: codex
+    prompt: |
+      添加回归测试：
+      - 覆盖Bug场景
+      - 验证修复有效性
+    depends_on: implement_fix
+
+  - name: create_pr
+    action: github.create_pull_request
+    config:
+      title: "fix: {issue_title}"
+      labels: [bug, P1]
+
+## 质量检查配置
+
+quality_gates:
+  - name: code_style
+    check: eslint
+    blocking: true
+
+  - name: type_safety
+    check: typescript
+    blocking: true
+
+  - name: test_coverage
+    check: coverage
+    threshold: 70
+    blocking: true
+
+  - name: security
+    check: npm_audit
+    severity: high
+    blocking: true
+
+## 通知配置
+
+notifications:
+  slack:
+    webhook_url: ${SLACK_WEBHOOK}
+    events:
+      - ci_failure
+      - deployment_success
+      - deployment_failure
+    format: |
+      *{event_type}*
+      Repo: {repo}
+      Branch: {branch}
+      Status: {status}
+      URL: {url}
+
+  github:
+    events:
+      - pr_created
+      - ci_fixed
+    comment_on_issue: true
+
+## 性能配置
+
+performance:
+  parallel_agents: 2
+  timeout_seconds: 3600
+  retry_on_failure: true
+  max_retries: 3
+  cache_enabled: true
+  cache_ttl: 3600

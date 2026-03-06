@@ -1,0 +1,65 @@
+dataDir: /root/project/.ao-sessions
+worktreeDir: /root/project/.worktrees
+port: 3400
+terminalPort: 14820
+directTerminalPort: 14821
+
+defaults:
+  runtime: tmux
+  workspace: worktree
+  agent: claude-code
+  notifiers: []
+
+projects:
+  product-claude:
+    name: Product Studio (Claude)
+    repo: seangleridika-max/product-studio
+    path: /root/project/product-studio-claude
+    defaultBranch: main
+    sessionPrefix: psclaude
+    agent: claude-code
+    scm:
+      plugin: github
+    tracker:
+      plugin: github
+    postCreate:
+      - "npm ci"
+      - "npm test"
+    agentConfig:
+      permissions: default
+    agentRulesFile: .agent-rules.md
+
+  product-codex:
+    name: Product Studio (Codex)
+    repo: seangleridika-max/product-studio
+    path: /root/project/product-studio-codex
+    defaultBranch: main
+    sessionPrefix: pscodex
+    agent: codex
+    scm:
+      plugin: github
+    tracker:
+      plugin: github
+    postCreate:
+      - "npm ci"
+      - "npm test"
+    agentConfig:
+      permissions: skip
+    agentRulesFile: .agent-rules.md
+
+reactions:
+  ci-failed:
+    auto: true
+    action: send-to-agent
+    retries: 2
+    escalateAfter: 2
+
+  changes-requested:
+    auto: true
+    action: send-to-agent
+    escalateAfter: 30m
+
+  approved-and-green:
+    auto: false
+    action: notify
+    priority: action
