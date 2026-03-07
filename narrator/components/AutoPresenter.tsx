@@ -120,6 +120,7 @@ const AutoPresenter: React.FC<AutoPresenterProps> = ({ presentationData }) => {
     const [isPaused, setIsPaused] = useState(false);
     const [currentSceneIndex, setCurrentSceneIndex] = useState(-1); // -1 intro, -2 outro
     const [progress, setProgress] = useState(0);
+    const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
     const scenes = presentationData.scenes;
     const audioQueueRef = useRef<(AudioBuffer | null)[]>([]);
@@ -180,6 +181,14 @@ const AutoPresenter: React.FC<AutoPresenterProps> = ({ presentationData }) => {
         setIsLoading(false);
     }, [scenes, t, addAsset, addLog]);
 
+    const preloadImage = useCallback((index: number) => {
+        if (index >= 0 && index < scenes.length && scenes[index].backgroundImage) {
+            const img = new Image();
+            img.src = scenes[index].backgroundImage;
+            img.onload = () => setLoadedImages(prev => new Set(prev).add(index));
+        }
+    }, [scenes]);
+
     const goToNextScene = useCallback(() => {
         pauseOffsetRef.current = 0;
         setCurrentSceneIndex(prevIndex => {
@@ -207,6 +216,14 @@ const AutoPresenter: React.FC<AutoPresenterProps> = ({ presentationData }) => {
         playbackStartTimeRef.current = audioContextRef.current.currentTime - offset;
     }, [isPlaying, isPaused, goToNextScene]);
     
+    // Lazy load images for current and next scene
+    useEffect(() => {
+        if (currentSceneIndex >= 0 && currentSceneIndex < scenes.length) {
+            preloadImage(currentSceneIndex);
+            preloadImage(currentSceneIndex + 1);
+        }
+    }, [currentSceneIndex, scenes.length, preloadImage]);
+
     // Playback Core Logic
     useEffect(() => {
         stopCurrentAudio();
@@ -332,7 +349,7 @@ const AutoPresenter: React.FC<AutoPresenterProps> = ({ presentationData }) => {
 
                     {/* Dynamic Scenes */}
                     {scenes.map((scene, index) => (
-                        <div key={scene.id} className={`absolute inset-0 transition-opacity duration-1000 bg-cover bg-center ${currentSceneIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`} style={{backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${scene.backgroundImage})`}}>
+                        <div key={scene.id} className={`absolute inset-0 transition-opacity duration-1000 bg-cover bg-center ${currentSceneIndex === index ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`} style={{backgroundImage: loadedImages.has(index) ? `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${scene.backgroundImage})` : 'none'}}>
                             {currentSceneIndex === index && <SceneRenderer scene={scene} />}
                         </div>
                     ))}
