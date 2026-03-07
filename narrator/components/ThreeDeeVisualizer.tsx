@@ -92,9 +92,9 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: num
     const startX = isBulletPoint ? x + ctx.measureText(bullet).width : x;
 
     for(let n = 0; n < words.length; n++) {
-      let testLine = line + words[n] + ' ';
-      let metrics = ctx.measureText(testLine);
-      let testWidth = metrics.width;
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
       if (testWidth > maxWidth && n > 0) {
         ctx.fillText(line, startX, y);
         line = words[n] + ' ';
@@ -546,7 +546,7 @@ function initShowroom(stateRef: any, sceneData: any) {
 
     const placeSlides = (slideList: any[], wall: 'back' | 'left' | 'right') => {
       const totalWidth = slideList.length * SLIDE_WIDTH + Math.max(0, slideList.length - 1) * PADDING;
-      let startOffset = -totalWidth / 2 + SLIDE_WIDTH / 2;
+      const startOffset = -totalWidth / 2 + SLIDE_WIDTH / 2;
 
       slideList.forEach((slideData: any, index: number) => {
         const canvas = document.createElement('canvas');
@@ -567,7 +567,7 @@ function initShowroom(stateRef: any, sceneData: any) {
         mesh.castShadow = true;
         mesh.userData.id = slideData.id;
 
-        let position = new THREE.Vector3();
+        const position = new THREE.Vector3();
         let rotationY = 0;
         const offset = startOffset + index * (SLIDE_WIDTH + PADDING);
 

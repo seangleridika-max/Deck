@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DownloadIcon, ClipboardIcon, ClipboardCheckIcon, CameraIcon } from './Icons';
 import { useLanguage } from '../contexts/LanguageContext';
 

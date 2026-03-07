@@ -3,7 +3,7 @@ import GeminiPanel from './GeminiPanel';
 import VoiceOverPanel from './VoiceOverPanel';
 import { generateHtml } from '../services/geminiService';
 import { bootstrapScript } from './bootstrap';
-import { BackIcon, CodeIcon, DesktopIcon, DownloadIcon, LandscapeIcon, MobileIcon, PortraitIcon, PreviewIcon, TabletIcon, VoiceOverIcon } from './icons';
+import { BackIcon, CodeIcon, DesktopIcon, DownloadIcon, LandscapeIcon, MobileIcon, PreviewIcon, TabletIcon, VoiceOverIcon } from './icons';
 import DownloadModal from './DownloadModal';
 
 
@@ -209,15 +209,12 @@ const Editor: React.FC<EditorProps> = ({ initialCode, onBack }) => {
 
             const originalHtml = target.innerHTML;
 
-            let handleBlur: () => void;
-            let handleKeyDown: (ke: KeyboardEvent) => void;
-            
             const cleanup = () => {
                 target.removeEventListener('blur', handleBlur);
                 target.removeEventListener('keydown', handleKeyDown);
             };
 
-            handleBlur = () => {
+            const handleBlur = () => {
                 target.contentEditable = 'false';
                 target.classList.remove('gemini-editing');
                 
@@ -236,7 +233,7 @@ const Editor: React.FC<EditorProps> = ({ initialCode, onBack }) => {
                 cleanup();
             };
 
-            handleKeyDown = (ke: KeyboardEvent) => {
+            const handleKeyDown = (ke: KeyboardEvent) => {
                 if (ke.key === 'Enter' && !ke.shiftKey) {
                     ke.preventDefault();
                     target.blur(); 
@@ -281,16 +278,6 @@ const Editor: React.FC<EditorProps> = ({ initialCode, onBack }) => {
       </div>
     </div>
   );
-
-  const mainContentWidth = () => {
-    let width = '100%';
-    if (viewMode === 'editor') {
-        const geminiPanelWidth = '33.333333%'; // w-1/3
-        const voiceOverPanelWidth = isVoiceOverPanelOpen ? '25%' : '0%'; // w-1/4
-        width = `calc(100% - ${geminiPanelWidth} - ${voiceOverPanelWidth})`;
-    }
-    return width;
-  };
 
 
   return (

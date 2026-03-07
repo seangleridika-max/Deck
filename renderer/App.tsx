@@ -89,7 +89,7 @@ const PresentationViewer: React.FC<{ assets: PresentationAssets, iframeRef: Reac
         </head>
         <body>
           ${assets.html}
-          <script>${assets.js}<\/script>
+          <script>${assets.js}</script>
         </body>
       </html>
     `;
@@ -315,7 +315,7 @@ export default function App() {
             // 0. Reload iframe to reset animations
             setProcessingMessage('Reloading presentation for recording...');
             const iframe = iframeRef.current;
-            const srcDoc = `<html><head><style>${assets.css}</style></head><body>${assets.html}<script>${assets.js}<\/script></body></html>`;
+            const srcDoc = `<html><head><style>${assets.css}</style></head><body>${assets.html}<script>${assets.js}</script></body></html>`;
 
             await new Promise<void>(resolve => {
                 const listener = () => {

@@ -23,7 +23,7 @@ export const createSession = async (baseUrl: string, token: string, appName: str
 
 export const appendLogs = async (baseUrl: string, token: string, sessionId: string, logs: LogEntry[]) => {
     // Fabric API expects entries without timestamp
-    const entries = logs.map(({ timestamp, ...rest }) => rest);
+    const entries = logs.map(({ timestamp: _timestamp, ...rest }) => rest);
     if(entries.length === 0) return;
     
     const response = await fetch(`${baseUrl}/sessions/${sessionId}/logs`, {
