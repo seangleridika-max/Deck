@@ -19,13 +19,28 @@ export const handleProjects = {
   async list(request: Request, env: Env) {
     const userId = request.headers.get('X-User-Id');
     const url = new URL(request.url);
+
     const status = url.searchParams.get('status') || 'active';
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+    const sortBy = url.searchParams.get('sortBy') || 'updated_at';
+    const order = url.searchParams.get('order') === 'asc' ? 'ASC' : 'DESC';
+
+    const allowedSortFields = ['created_at', 'updated_at', 'title'];
+    const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'updated_at';
 
     const { results } = await env.DECK_DB.prepare(
-      'SELECT * FROM projects WHERE user_id = ? AND status = ? ORDER BY updated_at DESC'
-    ).bind(userId, status).all();
+      `SELECT * FROM projects WHERE user_id = ? AND status = ? ORDER BY ${sortField} ${order} LIMIT ? OFFSET ?`
+    ).bind(userId, status, limit, offset).all();
 
-    return Response.json({ projects: results });
+    const { total } = await env.DECK_DB.prepare(
+      'SELECT COUNT(*) as total FROM projects WHERE user_id = ? AND status = ?'
+    ).bind(userId, status).first() as { total: number };
+
+    return Response.json({
+      projects: results,
+      pagination: { total, limit, offset, hasMore: offset + results.length < total }
+    });
   },
 
   async get(request: Request, env: Env) {
