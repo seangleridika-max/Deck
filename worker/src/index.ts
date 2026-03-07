@@ -20,6 +20,7 @@ router.post('/users/login', handleUsers.login);
 router.get('/projects', authMiddleware, handleProjects.list);
 router.post('/projects', authMiddleware, handleProjects.create);
 router.get('/projects/:id', authMiddleware, handleProjects.get);
+router.post('/projects/:id/slides', authMiddleware, handleProjects.generateSlides);
 
 // 404处理
 router.all('*', () => new Response('Not Found', { status: 404 }));

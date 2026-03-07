@@ -1,9 +1,11 @@
 import { nanoid } from 'nanoid';
 import { Env } from '../types';
+import PptxGenJS from 'pptxgenjs';
 
 export const handleProjects = {
   async create(request: Request, env: Env) {
-    const { title, skillId } = await request.json();
+    const body = await request.json() as { title: string; skillId?: string };
+    const { title, skillId } = body;
     const userId = request.headers.get('X-User-Id');
 
     const projectId = nanoid();
@@ -41,5 +43,37 @@ export const handleProjects = {
     }
 
     return Response.json({ project });
+  },
+
+  async generateSlides(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const projectId = url.pathname.split('/')[2];
+
+    const project = await env.DECK_DB.prepare(
+      'SELECT * FROM projects WHERE id = ?'
+    ).bind(projectId).first() as { title: string } | null;
+
+    if (!project) {
+      return Response.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    const pptx = new PptxGenJS();
+    const slide = pptx.addSlide();
+    slide.addText(project.title || 'Untitled Project', { x: 1, y: 1, fontSize: 24, color: '363636' });
+
+    const pptxData = await pptx.write({ outputType: 'arraybuffer' }) as ArrayBuffer;
+    const filename = `${projectId}-${Date.now()}.pptx`;
+    const r2Key = `slides/${filename}`;
+
+    await env.DECK_ASSETS.put(r2Key, pptxData, {
+      httpMetadata: { contentType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' }
+    });
+
+    const now = new Date().toISOString();
+    await env.DECK_DB.prepare(
+      'INSERT INTO assets (project_id, type, filename, r2_key, size, content_type, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(projectId, 'slides', filename, r2Key, pptxData.byteLength, 'application/vnd.openxmlformats-officedocument.presentationml.presentation', now).run();
+
+    return Response.json({ downloadUrl: `/assets/${r2Key}` }, { status: 201 });
   }
 };
