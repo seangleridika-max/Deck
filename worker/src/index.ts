@@ -4,6 +4,7 @@ import { corsHeaders } from './utils/cors';
 import { authMiddleware } from './middleware/auth';
 import { handleUsers } from './routes/users';
 import { handleProjects } from './routes/projects';
+import { handleConversations } from './routes/conversations';
 
 const router = Router();
 
@@ -20,6 +21,11 @@ router.post('/users/login', handleUsers.login);
 router.get('/projects', authMiddleware, handleProjects.list);
 router.post('/projects', authMiddleware, handleProjects.create);
 router.get('/projects/:id', authMiddleware, handleProjects.get);
+
+// 对话路由（需要认证）
+router.post('/conversations', authMiddleware, handleConversations.create);
+router.post('/conversations/:id/stream', authMiddleware, handleConversations.stream);
+router.get('/conversations/:id/messages', authMiddleware, handleConversations.getMessages);
 
 // 404处理
 router.all('*', () => new Response('Not Found', { status: 404 }));
