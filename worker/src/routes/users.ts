@@ -3,7 +3,7 @@ import { Env } from '../types';
 
 export const handleUsers = {
   async register(request: Request, env: Env) {
-    const { email, password, name } = await request.json();
+    const { email, password, name } = await request.json() as { email: string; password: string; name: string };
 
     if (!email || !password || !name) {
       return Response.json({ error: 'Missing fields' }, { status: 400 });
@@ -20,7 +20,7 @@ export const handleUsers = {
   },
 
   async login(request: Request, env: Env) {
-    const { email, password } = await request.json();
+    const { email, password } = await request.json() as { email: string; password: string };
 
     const user = await env.DECK_DB.prepare(
       'SELECT * FROM users WHERE email = ?'
