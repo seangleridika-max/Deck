@@ -32,4 +32,9 @@ export const projectAPI = {
   get: (id: string) => api.get(`/projects/${id}`)
 };
 
+export const userAPI = {
+  getProfile: () => api.get('/users/profile'),
+  getStats: () => api.get('/users/stats')
+};
+
 export default api;
