@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 
 interface SlideEditorProps {
   initialCode: { html: string; css: string; js: string };
@@ -6,7 +6,7 @@ interface SlideEditorProps {
   projectId?: string;
 }
 
-export default function SlideEditor({ initialCode, onBack, projectId }: SlideEditorProps) {
+export default function SlideEditor({ initialCode, onBack }: SlideEditorProps) {
   const [code, setCode] = useState(initialCode);
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview');
   const iframeRef = useRef<HTMLIFrameElement>(null);
