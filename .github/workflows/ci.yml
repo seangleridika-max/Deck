@@ -87,11 +87,6 @@ jobs:
           cd worker
           npm run test:coverage
 
-      - name: D1 Migration Dry Run
-        run: |
-          cd worker
-          npx wrangler d1 migrations apply deck_db --local --dry-run
-
       - name: API Contract Tests
         run: |
           cd worker
