@@ -26,8 +26,9 @@ export default function LoginPage() {
         setAuth(data.token, data.userId);
       }
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.error || '操作失败');
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { error?: string } } };
+      setError(error.response?.data?.error || '操作失败');
     }
   };
 
