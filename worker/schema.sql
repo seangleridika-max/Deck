@@ -60,3 +60,14 @@ CREATE TABLE IF NOT EXISTS app_storage_objects (
 );
 
 CREATE INDEX IF NOT EXISTS idx_app_storage_objects_app ON app_storage_objects (app_name, filename);
+
+CREATE TABLE IF NOT EXISTS research_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id TEXT NOT NULL,
+  role TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  metadata TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_research_logs_project ON research_logs (project_id, created_at DESC);
