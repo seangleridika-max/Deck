@@ -9,7 +9,10 @@
     "deploy:production": "wrangler deploy --env production",
     "test": "echo \"No tests yet\"",
     "test:coverage": "echo \"No tests yet\"",
-    "build": "tsc"
+    "test:contract": "echo \"No contract tests yet\"",
+    "build": "tsc",
+    "lint": "echo \"No lint yet\"",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "itty-router": "^4.0.0",
