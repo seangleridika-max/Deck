@@ -23,3 +23,10 @@ export interface Source {
   content: string;
   createdAt: string;
 }
+
+export interface Skill {
+  id: string;
+  name: string;
+  description: string;
+  steps: string[];
+}
