@@ -7,8 +7,8 @@
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",
     "deploy:production": "wrangler deploy --env production",
-    "test": "echo \"No tests yet\"",
-    "test:coverage": "echo \"No tests yet\"",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "build": "tsc"
   },
   "dependencies": {

@@ -26,7 +26,8 @@ export const authAPI = {
 };
 
 export const projectAPI = {
-  list: (status = 'active') => api.get('/projects', { params: { status } }),
+  list: (params?: { status?: string; limit?: number; offset?: number; sortBy?: string; order?: 'asc' | 'desc' }) =>
+    api.get('/projects', { params: { status: 'active', ...params } }),
   create: (title: string, skillId?: string) =>
     api.post('/projects', { title, skillId }),
   get: (id: string) => api.get(`/projects/${id}`)
