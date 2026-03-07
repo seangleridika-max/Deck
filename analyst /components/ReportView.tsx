@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Task } from '../types';
 import { DownloadIcon, ExportIcon } from './Icons';
 import CloudUploadModal from './CloudUploadModal';
+import { Document, Paragraph, Packer, TextRun, HeadingLevel } from 'docx';
+import html2pdf from 'html2pdf.js';
 
 declare global {
   interface Window {
@@ -135,6 +137,63 @@ const ReportView: React.FC<ReportViewProps> = ({ markdown, htmlFiles, htmlBlobUr
     setIsExportMenuOpen(false);
   };
 
+  const handleExportDocx = async () => {
+    setIsDownloading(true);
+    setIsExportMenuOpen(false);
+    try {
+      const { markdown, symbol } = reportDataRef.current;
+      const lines = markdown.split('\n');
+      const children: Paragraph[] = [];
+
+      for (const line of lines) {
+        if (line.startsWith('# ')) {
+          children.push(new Paragraph({ text: line.slice(2), heading: HeadingLevel.HEADING_1 }));
+        } else if (line.startsWith('## ')) {
+          children.push(new Paragraph({ text: line.slice(3), heading: HeadingLevel.HEADING_2 }));
+        } else if (line.startsWith('### ')) {
+          children.push(new Paragraph({ text: line.slice(4), heading: HeadingLevel.HEADING_3 }));
+        } else {
+          children.push(new Paragraph({ children: [new TextRun(line)] }));
+        }
+      }
+
+      const doc = new Document({ sections: [{ children }] });
+      const blob = await Packer.toBlob(doc);
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${symbol}_Report.docx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    } catch (error) {
+      console.error('Failed to generate DOCX', error);
+      alert(`An error occurred while creating the DOCX file: ${error instanceof Error ? error.message : ''}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    setIsDownloading(true);
+    setIsExportMenuOpen(false);
+    try {
+      const { htmlFiles, symbol } = reportDataRef.current;
+      const mainHtml = htmlFiles.find(f => f.name === 'index.html');
+      if (!mainHtml) throw new Error('HTML content not found');
+
+      const element = document.createElement('div');
+      element.innerHTML = mainHtml.content;
+
+      await html2pdf().from(element).save(`${symbol}_Report.pdf`);
+    } catch (error) {
+      console.error('Failed to generate PDF', error);
+      alert(`An error occurred while creating the PDF file: ${error instanceof Error ? error.message : ''}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // Fix: Use React.FC to explicitly type the component and its props.
   const TabButton: React.FC<{ tabId: Tab, children: React.ReactNode }> = ({ tabId, children }) => (
     <button
@@ -194,6 +253,18 @@ const ReportView: React.FC<ReportViewProps> = ({ markdown, htmlFiles, htmlBlobUr
                     <button onClick={handleLocalDownload} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-slate-200 hover:bg-blue-600 rounded-md transition-colors">
                       <DownloadIcon className="h-5 w-5" />
                       <span>Download as .zip</span>
+                    </button>
+                    <button onClick={handleExportDocx} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-slate-200 hover:bg-blue-600 rounded-md transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Download as .docx</span>
+                    </button>
+                    <button onClick={handleExportPdf} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-slate-200 hover:bg-blue-600 rounded-md transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                      <span>Download as .pdf</span>
                     </button>
                     <button onClick={handleOpenCloudModal} className="w-full text-left flex items-center gap-3 px-3 py-2 text-sm text-slate-200 hover:bg-blue-600 rounded-md transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
