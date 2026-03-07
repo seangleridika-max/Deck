@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import { Env } from '../types';
 
 export const handleReports = {
