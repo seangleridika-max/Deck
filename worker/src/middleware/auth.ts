@@ -15,5 +15,5 @@ export async function authMiddleware(request: Request, env: Env) {
     return Response.json({ error: 'Invalid token' }, { status: 401 });
   }
 
-  (request as any).user = payload;
+  (request as Request & { user: { userId: string; email: string } }).user = payload;
 }

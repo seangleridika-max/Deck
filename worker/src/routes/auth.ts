@@ -3,7 +3,7 @@ import { Env } from '../types';
 
 export const handleAuth = {
   async register(request: Request, env: Env) {
-    const body = await request.json() as any;
+    const body = (await request.json()) as { email: string; password: string; name: string };
     const { email, password, name } = body;
 
     if (!email || !password || !name) {
@@ -23,7 +23,7 @@ export const handleAuth = {
   },
 
   async login(request: Request, env: Env) {
-    const body = await request.json() as any;
+    const body = (await request.json()) as { email: string; password: string };
     const { email, password } = body;
 
     const user = await env.DECK_DB.prepare(
