@@ -2,7 +2,7 @@ import { Router } from 'itty-router';
 import { Env } from './types';
 import { corsHeaders } from './utils/cors';
 import { authMiddleware } from './middleware/auth';
-import { handleUsers } from './routes/users';
+import { handleAuth } from './routes/auth';
 import { handleProjects } from './routes/projects';
 
 const router = Router();
@@ -12,9 +12,9 @@ router.get('/health', () => {
   return Response.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 用户路由
-router.post('/users', handleUsers.register);
-router.post('/users/login', handleUsers.login);
+// 认证路由
+router.post('/auth/register', handleAuth.register);
+router.post('/auth/login', handleAuth.login);
 
 // 项目路由（需要认证）
 router.get('/projects', authMiddleware, handleProjects.list);
