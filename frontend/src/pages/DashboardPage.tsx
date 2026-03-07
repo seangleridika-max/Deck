@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { projectAPI } from '../services/api';
 import { useAuthStore } from '../store/auth';
+import { Project } from '@shared/types';
 
 export default function DashboardPage() {
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState('');
   const navigate = useNavigate();
@@ -76,7 +77,7 @@ export default function DashboardPage() {
             >
               <h3 className="font-bold mb-2">{project.title}</h3>
               <p className="text-sm text-gray-500">
-                {new Date(project.created_at).toLocaleDateString()}
+                {new Date(project.createdAt).toLocaleDateString()}
               </p>
             </div>
           ))}
