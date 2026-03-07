@@ -51,10 +51,13 @@ export default function ChatPage() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let done = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
+      while (!done) {
+        const result = await reader.read();
+        done = result.done;
         if (done) break;
+        const value = result.value;
 
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n').filter(line => line.trim());
