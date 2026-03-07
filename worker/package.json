@@ -9,6 +9,7 @@
     "deploy:production": "wrangler deploy --env production",
     "test": "echo \"No tests yet\"",
     "test:coverage": "echo \"No tests yet\"",
+    "test:contract": "echo \"No contract tests yet\"",
     "build": "tsc"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { Task } from "../types";
 
 // Fix: Initialize the GoogleGenAI client with a named apiKey parameter.
