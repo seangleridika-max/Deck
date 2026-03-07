@@ -4,6 +4,7 @@ import { corsHeaders } from './utils/cors';
 import { authMiddleware } from './middleware/auth';
 import { handleUsers } from './routes/users';
 import { handleProjects } from './routes/projects';
+import { handleExtract } from './routes/extract';
 
 const router = Router();
 
@@ -20,6 +21,9 @@ router.post('/users/login', handleUsers.login);
 router.get('/projects', authMiddleware, handleProjects.list);
 router.post('/projects', authMiddleware, handleProjects.create);
 router.get('/projects/:id', authMiddleware, handleProjects.get);
+
+// URL提取路由
+router.post('/extract', handleExtract.extract);
 
 // 404处理
 router.all('*', () => new Response('Not Found', { status: 404 }));
