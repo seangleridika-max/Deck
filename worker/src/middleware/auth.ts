@@ -1,4 +1,5 @@
 import { Env } from '../types';
+import { verifyJWT } from '../routes/auth';
 
 export async function authMiddleware(request: Request, env: Env) {
   const authHeader = request.headers.get('Authorization');
@@ -8,9 +9,11 @@ export async function authMiddleware(request: Request, env: Env) {
   }
 
   const token = authHeader.substring(7);
+  const payload = await verifyJWT(token, env.DECK_TOKEN);
 
-  // 验证Token（简化版，实际应验证JWT）
-  if (token !== env.DECK_TOKEN) {
+  if (!payload) {
     return Response.json({ error: 'Invalid token' }, { status: 401 });
   }
+
+  (request as any).user = payload;
 }

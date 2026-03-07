@@ -3,7 +3,8 @@ import { Env } from '../types';
 
 export const handleProjects = {
   async create(request: Request, env: Env) {
-    const { title, skillId } = await request.json();
+    const body = await request.json() as any;
+    const { title, skillId } = body;
     const userId = request.headers.get('X-User-Id');
 
     const projectId = nanoid();
