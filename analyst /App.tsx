@@ -1,12 +1,13 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Task, ReportData, TaskStatus } from './types';
+import { Task, ReportData, TaskStatus, ReportTemplate } from './types';
 import * as GeminiService from './services/gemini';
 import * as FMPService from './services/fmp';
 import ExecutionFlow from './components/ExecutionFlow';
 import ReportView from './components/ReportView';
 import FmpApiKeyModal from './components/FmpApiKeyModal';
 import ToggleSwitch from './components/ToggleSwitch';
+import TemplateSelector from './components/TemplateSelector';
 import { SearchIcon, LoadingIcon, ErrorIcon } from './components/Icons';
 import { FMP_TASKS } from './constants';
 
@@ -23,6 +24,7 @@ class TaskExecutionError extends Error {
 const App: React.FC = () => {
   const [symbol, setSymbol] = useState('');
   const [researchMode, setResearchMode] = useState<ResearchMode>('deep');
+  const [reportTemplate, setReportTemplate] = useState<ReportTemplate>('professional');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [report, setReport] = useState<ReportData | null>(null);
   const [htmlBlobUrl, setHtmlBlobUrl] = useState<string>('');
@@ -439,6 +441,10 @@ const App: React.FC = () => {
             </div>
           </div>
 
+          <div className="mt-4 max-w-md mx-auto">
+            <TemplateSelector selected={reportTemplate} onChange={setReportTemplate} disabled={isLoading} />
+          </div>
+
            {error && !isFmpModalOpen && (
             <div className="mt-4 flex items-center justify-center gap-2 text-red-400 bg-red-900/20 p-3 rounded-lg animate-fade-in">
               <ErrorIcon className="h-5 w-5" />
@@ -455,7 +461,7 @@ const App: React.FC = () => {
         
         {report && !isProcessing && !hasFailed && (
           <section className="mt-12 max-w-7xl mx-auto">
-            <ReportView markdown={report.markdown} htmlFiles={report.htmlFiles} htmlBlobUrl={htmlBlobUrl} tasks={tasksRef.current} symbol={symbol} />
+            <ReportView markdown={report.markdown} htmlFiles={report.htmlFiles} htmlBlobUrl={htmlBlobUrl} tasks={tasksRef.current} symbol={symbol} template={reportTemplate} />
           </section>
         )}
       </main>

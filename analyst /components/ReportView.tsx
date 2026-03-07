@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Task } from '../types';
+import { Task, ReportTemplate } from '../types';
 import { DownloadIcon, ExportIcon } from './Icons';
 import CloudUploadModal from './CloudUploadModal';
 
@@ -15,22 +15,34 @@ interface ReportViewProps {
   htmlBlobUrl: string;
   tasks: Task[];
   symbol: string;
+  template: ReportTemplate;
 }
 
 type Tab = 'html' | 'markdown' | 'research';
 
-const ReportView: React.FC<ReportViewProps> = ({ markdown, htmlFiles, htmlBlobUrl, tasks, symbol }) => {
+const ReportView: React.FC<ReportViewProps> = ({ markdown, htmlFiles, htmlBlobUrl, tasks, symbol, template }) => {
   const [activeTab, setActiveTab] = useState<Tab>('html');
   const [isDownloading, setIsDownloading] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isCloudModalOpen, setIsCloudModalOpen] = useState(false);
   const exportMenuRef = useRef<HTMLDivElement>(null);
-  
+
   const reportDataRef = useRef({ markdown, htmlFiles, tasks, symbol });
-  
+
   useEffect(() => {
     reportDataRef.current = { markdown, htmlFiles, tasks, symbol };
   }, [markdown, htmlFiles, tasks, symbol]);
+
+  const getTemplateStyles = () => {
+    switch (template) {
+      case 'compact':
+        return 'text-sm leading-tight';
+      case 'detailed':
+        return 'text-base leading-relaxed';
+      default:
+        return 'text-base leading-normal';
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -207,7 +219,7 @@ const ReportView: React.FC<ReportViewProps> = ({ markdown, htmlFiles, htmlBlobUr
           </div>
         </div>
 
-        <div className="p-2 sm:p-4 max-h-[80vh] overflow-y-auto">
+        <div className={`p-2 sm:p-4 max-h-[80vh] overflow-y-auto ${getTemplateStyles()}`}>
           {activeTab === 'markdown' && (
             <pre className="whitespace-pre-wrap bg-slate-900/50 p-4 rounded-lg text-slate-200 text-sm">
               <code>{markdown}</code>

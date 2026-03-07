@@ -7,6 +7,8 @@ export type TaskStatus = 'pending' | 'running' | 'completed' | 'failed';
 
 export type TaskType = 'meta' | 'data-gathering' | 'research';
 
+export type ReportTemplate = 'professional' | 'compact' | 'detailed';
+
 export interface Task {
   id: string;
   parentId: string | null;
