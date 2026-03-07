@@ -59,3 +59,19 @@ export interface Asset {
   size: number;
   createdAt: string;
 }
+
+// 对话
+export interface Conversation {
+  id: string;
+  sessionId: string;
+  createdAt: string;
+}
+
+// 消息
+export interface Message {
+  id: number;
+  conversationId: string;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}
