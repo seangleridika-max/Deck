@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
-import { Env } from '../types';
+import { Env, Source } from '../types';
+import { aggregateSources } from '../utils/sourceAggregator';
 
 export const handleProjects = {
   async create(request: Request, env: Env) {
@@ -41,5 +42,18 @@ export const handleProjects = {
     }
 
     return Response.json({ project });
+  },
+
+  async getAggregatedContext(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const projectId = url.pathname.split('/')[2];
+    const maxTokens = parseInt(url.searchParams.get('maxTokens') || '100000');
+
+    const { results } = await env.DECK_DB.prepare(
+      'SELECT * FROM sources WHERE project_id = ? ORDER BY created_at ASC'
+    ).bind(projectId).all();
+
+    const context = aggregateSources(results as Source[], maxTokens);
+    return Response.json(context);
   }
 };
