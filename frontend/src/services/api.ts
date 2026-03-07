@@ -34,8 +34,8 @@ export const projectAPI = {
 
 export const sourceAPI = {
   list: (projectId: string) => api.get('/sources', { params: { projectId } }),
-  create: (projectId: string, type: string, url?: string, title?: string) =>
-    api.post('/sources', { projectId, type, url, title }),
+  create: (projectId: string, type: string, url?: string, title?: string, content?: string) =>
+    api.post('/sources', { projectId, type, url, title, content }),
   delete: (id: string) => api.delete(`/sources/${id}`)
 };
 

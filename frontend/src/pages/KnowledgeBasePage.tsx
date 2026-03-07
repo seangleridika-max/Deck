@@ -15,8 +15,10 @@ export default function KnowledgeBasePage() {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [addType, setAddType] = useState<'url' | 'file'>('url');
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     loadSources();
@@ -34,11 +36,18 @@ export default function KnowledgeBasePage() {
   };
 
   const handleAdd = async () => {
-    if (!url.trim()) return;
     try {
-      await sourceAPI.create(projectId!, 'url', url, title || url);
+      if (addType === 'url') {
+        if (!url.trim()) return;
+        await sourceAPI.create(projectId!, 'url', url, title || url);
+      } else {
+        if (!file) return;
+        const content = await file.text();
+        await sourceAPI.create(projectId!, 'file', undefined, title || file.name, content);
+      }
       setUrl('');
       setTitle('');
+      setFile(null);
       setShowAdd(false);
       loadSources();
     } catch (error) {
@@ -73,6 +82,20 @@ export default function KnowledgeBasePage() {
 
         {showAdd && (
           <div className="mb-6 p-4 bg-white rounded shadow">
+            <div className="mb-3 flex gap-2">
+              <button
+                onClick={() => setAddType('url')}
+                className={`px-3 py-1 rounded ${addType === 'url' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+              >
+                URL
+              </button>
+              <button
+                onClick={() => setAddType('file')}
+                className={`px-3 py-1 rounded ${addType === 'file' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+              >
+                文件
+              </button>
+            </div>
             <input
               type="text"
               placeholder="标题（可选）"
@@ -80,13 +103,21 @@ export default function KnowledgeBasePage() {
               onChange={(e) => setTitle(e.target.value)}
               className="w-full mb-2 px-3 py-2 border rounded"
             />
-            <input
-              type="url"
-              placeholder="URL"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full mb-2 px-3 py-2 border rounded"
-            />
+            {addType === 'url' ? (
+              <input
+                type="url"
+                placeholder="URL"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="w-full mb-2 px-3 py-2 border rounded"
+              />
+            ) : (
+              <input
+                type="file"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="w-full mb-2 px-3 py-2 border rounded"
+              />
+            )}
             <button
               onClick={handleAdd}
               className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
