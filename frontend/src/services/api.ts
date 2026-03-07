@@ -22,7 +22,10 @@ export const authAPI = {
   register: (email: string, password: string, name: string) =>
     api.post('/users', { email, password, name }),
   login: (email: string, password: string) =>
-    api.post('/users/login', { email, password })
+    api.post('/users/login', { email, password }),
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (data: { name?: string; email?: string }) =>
+    api.put('/users/profile', data)
 };
 
 export const projectAPI = {

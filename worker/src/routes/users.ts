@@ -34,6 +34,49 @@ export const handleUsers = {
       token: env.DECK_TOKEN,
       userId: user.id
     });
+  },
+
+  async getProfile(request: Request, env: Env) {
+    const userId = (request as any).userId;
+
+    const user = await env.DECK_DB.prepare(
+      'SELECT id, email, name, created_at FROM users WHERE id = ?'
+    ).bind(userId).first();
+
+    if (!user) {
+      return Response.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return Response.json(user);
+  },
+
+  async updateProfile(request: Request, env: Env) {
+    const userId = (request as any).userId;
+    const { name, email } = await request.json();
+
+    if (!name && !email) {
+      return Response.json({ error: 'No fields to update' }, { status: 400 });
+    }
+
+    const updates = [];
+    const values = [];
+
+    if (name) {
+      updates.push('name = ?');
+      values.push(name);
+    }
+    if (email) {
+      updates.push('email = ?');
+      values.push(email);
+    }
+
+    values.push(userId);
+
+    await env.DECK_DB.prepare(
+      `UPDATE users SET ${updates.join(', ')} WHERE id = ?`
+    ).bind(...values).run();
+
+    return Response.json({ success: true });
   }
 };
 
