@@ -3,6 +3,7 @@ import { useAuthStore } from './store/auth';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectPage from './pages/ProjectPage';
+import SkillCenterPage from './pages/SkillCenterPage';
 
 function App() {
   const { token } = useAuthStore();
@@ -14,6 +15,10 @@ function App() {
         <Route
           path="/dashboard"
           element={token ? <DashboardPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/skills"
+          element={token ? <SkillCenterPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/project/:id"
