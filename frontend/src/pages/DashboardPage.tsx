@@ -31,7 +31,10 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold">Deck 工作台</h1>
-        <button onClick={logout} className="text-sm text-gray-600">退出</button>
+        <div className="flex gap-4 items-center">
+          <button onClick={() => navigate('/skills')} className="text-sm text-blue-600">技能中心</button>
+          <button onClick={logout} className="text-sm text-gray-600">退出</button>
+        </div>
       </header>
       <main className="max-w-7xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">

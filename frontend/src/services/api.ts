@@ -32,4 +32,10 @@ export const projectAPI = {
   get: (id: string) => api.get(`/projects/${id}`)
 };
 
+export const skillAPI = {
+  list: () => api.get('/skills'),
+  update: (id: string, data: { enabled: boolean }) =>
+    api.patch(`/skills/${id}`, data)
+};
+
 export default api;
