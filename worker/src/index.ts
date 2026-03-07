@@ -15,6 +15,7 @@ router.get('/health', () => {
 // 用户路由
 router.post('/users', handleUsers.register);
 router.post('/users/login', handleUsers.login);
+router.get('/users/stats', authMiddleware, handleUsers.getStats);
 
 // 项目路由（需要认证）
 router.get('/projects', authMiddleware, handleProjects.list);

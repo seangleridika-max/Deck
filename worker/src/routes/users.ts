@@ -34,6 +34,24 @@ export const handleUsers = {
       token: env.DECK_TOKEN,
       userId: user.id
     });
+  },
+
+  async getStats(request: Request, env: Env) {
+    const userId = request.headers.get('X-User-Id');
+
+    const [projects, sources, logs, assets] = await Promise.all([
+      env.DECK_DB.prepare('SELECT COUNT(*) as count FROM projects WHERE user_id = ?').bind(userId).first(),
+      env.DECK_DB.prepare('SELECT COUNT(*) as count FROM sources WHERE project_id IN (SELECT id FROM projects WHERE user_id = ?)').bind(userId).first(),
+      env.DECK_DB.prepare('SELECT COUNT(*) as count FROM research_logs WHERE project_id IN (SELECT id FROM projects WHERE user_id = ?)').bind(userId).first(),
+      env.DECK_DB.prepare('SELECT COUNT(*) as count FROM assets WHERE project_id IN (SELECT id FROM projects WHERE user_id = ?)').bind(userId).first()
+    ]);
+
+    return Response.json({
+      totalProjects: projects?.count || 0,
+      totalSources: sources?.count || 0,
+      totalResearchLogs: logs?.count || 0,
+      totalAssets: assets?.count || 0
+    });
   }
 };
 
