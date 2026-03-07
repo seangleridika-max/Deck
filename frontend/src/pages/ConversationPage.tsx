@@ -18,7 +18,8 @@ export default function ConversationPage() {
       setConversationId(res.data.conversationId);
     });
 
-    return () => sseClient.current.disconnect();
+    const client = sseClient.current;
+    return () => client.disconnect();
   }, []);
 
   const sendMessage = async () => {
