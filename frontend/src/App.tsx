@@ -3,6 +3,7 @@ import { useAuthStore } from './store/auth';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ProjectPage from './pages/ProjectPage';
+import ChatPage from './pages/ChatPage';
 
 function App() {
   const { token } = useAuthStore();
@@ -18,6 +19,10 @@ function App() {
         <Route
           path="/project/:id"
           element={token ? <ProjectPage /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/chat"
+          element={token ? <ChatPage /> : <Navigate to="/login" />}
         />
         <Route path="/" element={<Navigate to="/dashboard" />} />
       </Routes>
