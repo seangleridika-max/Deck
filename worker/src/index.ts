@@ -4,6 +4,7 @@ import { corsHeaders } from './utils/cors';
 import { authMiddleware } from './middleware/auth';
 import { handleUsers } from './routes/users';
 import { handleProjects } from './routes/projects';
+import { handleReports } from './routes/reports';
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.post('/users/login', handleUsers.login);
 router.get('/projects', authMiddleware, handleProjects.list);
 router.post('/projects', authMiddleware, handleProjects.create);
 router.get('/projects/:id', authMiddleware, handleProjects.get);
+router.post('/projects/:id/reports', authMiddleware, handleReports.generate);
 
 // 404处理
 router.all('*', () => new Response('Not Found', { status: 404 }));
